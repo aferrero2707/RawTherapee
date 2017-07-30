@@ -59,6 +59,7 @@ namespace
 
 void scale_colors(rtengine::RawImage *ri, float scale_mul[4], float cblack[4])
 {
+  /*
     DCraw::dcrawImage_t image = ri->get_image();
     if(ri->isBayer()) {
         const int height = ri->get_iheight();
@@ -122,6 +123,7 @@ void scale_colors(rtengine::RawImage *ri, float scale_mul[4], float cblack[4])
             }
         }
     }
+    */
 }
 
 }
@@ -372,6 +374,8 @@ RawMetaDataLocation Thumbnail::loadMetaDataFromRaw (const Glib::ustring& fname)
 
 Thumbnail* Thumbnail::loadFromRaw (const Glib::ustring& fname, RawMetaDataLocation& rml, int &w, int &h, int fixwh, double wbEq, bool rotate, int imageNum)
 {
+  return nullptr;
+#ifdef OLD_RAW_DECODING
     RawImage *ri = new RawImage (fname);
     unsigned int tempImageNum = 0;
 
@@ -842,6 +846,7 @@ Thumbnail* Thumbnail::loadFromRaw (const Glib::ustring& fname, RawMetaDataLocati
     tpp->init();
     delete ri;
     return tpp;
+#endif
 }
 #undef FISRED
 #undef FISGREEN

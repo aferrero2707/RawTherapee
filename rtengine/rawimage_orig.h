@@ -16,13 +16,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __RAWIMAGE_RAWSPEED_H
-#define __RAWIMAGE_RAWSPEED_H
+#ifndef __RAWIMAGE_H
+#define __RAWIMAGE_H
 
 #include <ctime>
 
-#include "myfile.h"
+#include "dcraw.h"
 #include "imageio.h"
+#include "noncopyable.h"
+
 #include "RawSpeed-API.h"
 
 
@@ -100,12 +102,10 @@ public:
 };
 
 
-
-class RawImage
+class RawImage: public DCraw
 {
 public:
 
-  typedef unsigned short (*dcrawImage_t)[4];
     explicit RawImage( const Glib::ustring &name );
     ~RawImage();
 
@@ -124,65 +124,17 @@ public:
     }
     float** compress_image(int frameNum); // revert to compressed pixels format and release image data
     float** data;             // holds pixel values, data[i][j] corresponds to the ith row and jth column
-    unsigned filters;               // modified filters for 3 color processing?
     unsigned prefilters;               // original filters saved ( used for 4 color processing )
     unsigned int getFrameCount() const { return is_raw; }
 protected:
-    int verbose, use_auto_wb, use_camera_wb, use_camera_matrix;
-    int exif_base, ciff_base, ciff_len;
-    IMFILE *ifp;
-    FILE *ofp;
-    std::unique_ptr<rawspeed::RawDecoder> decoder;
-    short order;
-    const char *ifname;
-    int mask[8][4], flip, tiff_flip, colors;
-    unsigned is_raw, dng_version, is_foveon;
-    float cam_mul[4], pre_mul[4], cmatrix[3][4], rgb_cam[3][4];
-    int xtrans[6][6],xtrans_abs[6][6];
-    char cdesc[5], desc[512], make[64], model[64], model2[64], model3[64], artist[64];
-    float flash_used, canon_ev, iso_speed, shutter, aperture, focal_len;
-    time_t timestamp;
-    off_t    strip_offset, data_offset;
-    off_t    thumb_offset, meta_offset, profile_offset;
-    unsigned thumb_length, meta_length, profile_length;
-    unsigned thumb_misc, *oprof, fuji_layout, shot_select, multi_out;
-    ushort raw_height, raw_width, height, width, top_margin, left_margin;
-    ushort shrink, iheight, iwidth, fuji_width, thumb_width, thumb_height;
-    unsigned tiff_nifds, tiff_samples, tiff_bps, tiff_compress;
-    unsigned black, cblack[4102], maximum, mix_green, raw_color, zero_is_bad;
-    ushort white[8][8], curve[0x10000], cr2_slice[3], sraw_mul[4];
-    unsigned raw_size;
-    ushort *raw_image;
-    float * float_raw_image;
-    dcrawImage_t image;
-    int RT_whitelevel_from_constant;
-    int RT_blacklevel_from_constant;
-    int RT_matrix_from_constant;
-
     Glib::ustring filename; // complete filename
     int rotate_deg; // 0,90,180,270 degree of rotation: info taken by dcraw from exif
     char* profile_data; // Embedded ICC color profile
     float* allocation; // pointer to allocated memory
     int maximum_c4[4];
-    rawspeed::CameraMetaData *meta;
-
     bool isFoveon() const
     {
         return is_foveon;
-    }
-
-    void shiftXtransMatrix( const int offsy, const int offsx) {
-        char xtransTemp[6][6];
-        for(int row = 0;row < 6; row++) {
-            for(int col = 0;col < 6; col++) {
-                xtransTemp[row][col] = xtrans[(row+offsy)%6][(col+offsx)%6];
-            }
-        }
-        for(int row = 0;row < 6; row++) {
-            for(int col = 0;col < 6; col++) {
-                xtrans[row][col] = xtransTemp[row][col];
-            }
-        }
     }
 
 public:
@@ -333,8 +285,7 @@ public:
     }
     int get_thumbBPS() const
     {
-      return 8;
-        //return thumb_load_raw ? 16 : 8;
+        return thumb_load_raw ? 16 : 8;
     }
     bool get_thumbSwap() const;
     unsigned get_thumbLength() const
@@ -354,6 +305,13 @@ public:
     bool isXtrans() const
     {
         return filters == 9;
+    }
+
+public:
+    // dcraw functions
+    void pre_interpolate()
+    {
+        DCraw::pre_interpolate();
     }
 
 public:
@@ -398,4 +356,4 @@ public:
 
 }
 
-#endif // __RAWIMAGE_RAWSPEED_H
+#endif // __RAWIMAGE_H

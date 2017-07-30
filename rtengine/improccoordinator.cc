@@ -926,6 +926,8 @@ void ImProcCoordinator::setScale (int prevscale)
         printf ("setscale starts (%d, %d)\n", nW, nH);
     }
 
+    printf("ImProcCoordinator::setScale(): nW=%d nH=%d\n", (int)nW, (int)nH);
+
     if (nW != pW || nH != pH) {
 
         freeAll ();

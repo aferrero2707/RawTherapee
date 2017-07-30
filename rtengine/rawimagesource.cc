@@ -25,6 +25,7 @@
 #include "jaggedarray.h"
 #include "median.h"
 #include "rawimage.h"
+#include "rawimage_rawspeed.h"
 #include "mytime.h"
 #include "iccstore.h"
 #include "curves.h"
@@ -632,19 +633,25 @@ void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* ima
     double r, g, b;
     float rm, gm, bm;
 
+    printf("getImage(): ctemp.getTemp()=%f\n", (float)ctemp.getTemp());
+
     if (ctemp.getTemp() < 0) {
         // no white balance, ie revert the pre-process white balance to restore original unbalanced raw camera color
         rm = ri->get_pre_mul(0);
         gm = ri->get_pre_mul(1);
         bm = ri->get_pre_mul(2);
+        printf("getImage(): rm=%f gm=%f bm=%f\n", rm, gm, bm);
     } else {
         ctemp.getMultipliers (r, g, b);
         rm = imatrices.cam_rgb[0][0] * r + imatrices.cam_rgb[0][1] * g + imatrices.cam_rgb[0][2] * b;
         gm = imatrices.cam_rgb[1][0] * r + imatrices.cam_rgb[1][1] * g + imatrices.cam_rgb[1][2] * b;
         bm = imatrices.cam_rgb[2][0] * r + imatrices.cam_rgb[2][1] * g + imatrices.cam_rgb[2][2] * b;
+        printf("getImage(): r=%f g=%f b=%f   rm=%f gm=%f bm=%f\n", (float)r, (float)g, (float)b, rm, gm, bm);
     }
 
     if (true) {
+      printf("getImage(): pre_mul=%f %f %f %f\n",
+          (float)ri->get_pre_mul(0), (float)ri->get_pre_mul(1), (float)ri->get_pre_mul(2), (float)ri->get_pre_mul(3));
         // adjust gain so the maximum raw value of the least scaled channel just hits max
         const float new_pre_mul[4] = { ri->get_pre_mul(0) / rm, ri->get_pre_mul(1) / gm, ri->get_pre_mul(2) / bm, ri->get_pre_mul(3) / gm };
         float new_scale_mul[4];
@@ -655,7 +662,7 @@ void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* ima
         rm = new_scale_mul[0] / scale_mul[0] * gain;
         gm = new_scale_mul[1] / scale_mul[1] * gain;
         bm = new_scale_mul[2] / scale_mul[2] * gain;
-        //fprintf(stderr, "camera gain: %f, current wb gain: %f, diff in stops %f\n", camInitialGain, gain, log2(camInitialGain) - log2(gain));
+        fprintf(stderr, "camera gain: %f, current wb gain: %f, diff in stops %f\n", camInitialGain, gain, log2(camInitialGain) - log2(gain));
     } else {
         // old scaling: used a fixed reference gain based on camera (as-shot) white balance
 
@@ -777,6 +784,8 @@ void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* ima
                         gtot = CLIP(gtot);
                         btot = CLIP(btot);
                     }
+
+                    if(i<10 && j<10) printf("getImage(): i=%d j=%d  R=%f G=%f B=%f\n", i, j, rtot, gtot, btot);
 
                     line_red[j] = rtot;
                     line_grn[j] = gtot;
@@ -1490,6 +1499,8 @@ void RawImageSource::getFullSize (int& w, int& h, int tr)
 
     w -= 2 * border;
     h -= 2 * border;
+
+    printf("RawImageSource::getFullSize(): W=%d H=%d fuji=%d d1x=%d\n", (int)w, (int)h, (int)fuji, (int)d1x);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1498,6 +1509,8 @@ void RawImageSource::getSize (const PreviewProps &pp, int& w, int& h)
 {
     w = pp.getWidth() / pp.getSkip() + (pp.getWidth() % pp.getSkip() > 0);
     h = pp.getHeight() / pp.getSkip() + (pp.getHeight() % pp.getSkip() > 0);
+
+    printf("RawImageSource::getFullSize(): W=%d H=%d\n", (int)w, (int)h);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1519,7 +1532,6 @@ void RawImageSource::vflip (Imagefloat* image)
 
 int RawImageSource::load (const Glib::ustring &fname, int imageNum, bool batch)
 {
-
     MyTime t1, t2;
     t1.set();
     fileName = fname;
@@ -1534,6 +1546,7 @@ int RawImageSource::load (const Glib::ustring &fname, int imageNum, bool batch)
     if (errCode) {
         return errCode;
     }
+
     numFrames = ri->getFrameCount();
 
     errCode = 0;
@@ -1589,6 +1602,7 @@ int RawImageSource::load (const Glib::ustring &fname, int imageNum, bool batch)
     /***** Copy once constant data extracted from raw *******/
     W = ri->get_width();
     H = ri->get_height();
+    printf("RawImageSource::load(): W=%d H=%d\n", (int)W, (int)H);
     fuji = ri->get_FujiWidth() != 0;
 
     for (int i = 0; i < 3; i++)
@@ -3465,7 +3479,7 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
 
     initialGain = calculate_scale_mul(scale_mul, ref_pre_mul, c_white, cblacksom, isMono, ri->get_colors()); // recalculate scale colors with adjusted levels
 
-    //fprintf(stderr, "recalc: %f [%f %f %f %f]\n", initialGain, scale_mul[0], scale_mul[1], scale_mul[2], scale_mul[3]);
+    fprintf(stderr, "recalc: %f [%f %f %f %f]\n", initialGain, scale_mul[0], scale_mul[1], scale_mul[2], scale_mul[3]);
     for(int i = 0; i < 4 ; i++) {
         clmax[i] = (c_white[i] - cblacksom[i]) * scale_mul[i];    // raw clip level
     }
@@ -3489,10 +3503,12 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
             {
                 for (int col = winx; col < winx + winw; col++) {
                     float val = rawData[row][col];
+                    float valsave = val;
                     int c  = FC(row, col);                        // three colors,  0=R, 1=G,  2=B
                     int c4 = ( c == 1 && !(row & 1) ) ? 3 : c;    // four  colors,  0=R, 1=G1, 2=B, 3=G2
                     val -= cblacksom[c4];
                     val *= scale_mul[c4];
+                    if(row<10 && col<10) printf("scaleColors(): c4=%d  raw value: %f -> %f\n",c4, valsave, val);
                     rawData[row][col] = (val);
                     tmpchmax[c] = max(tmpchmax[c], val);
                 }
@@ -4653,6 +4669,8 @@ void RawImageSource::getRAWHistogram (LUTu & histRedRaw, LUTu & histGreenRaw, LU
 
     const bool fourColours = ri->getSensorType() == ST_BAYER && ((mult[1] != mult[3] || cblacksom[1] != cblacksom[3]) || FC(0, 0) == 3 || FC(0, 1) == 3 || FC(1, 0) == 3 || FC(1, 1) == 3);
 
+    printf("RawImageSource::getRAWHistogram(): ri->get_colors()=%d  fourColours=%d\n", (int)ri->get_colors(), (int)fourColours);
+
     constexpr int histoSize = 65536;
     LUTu hist[4];
     hist[0](histoSize);
@@ -4712,8 +4730,12 @@ void RawImageSource::getRAWHistogram (LUTu & histRedRaw, LUTu & histGreenRaw, LU
                 c2 = ( fourColours && c2 == 1 && !(i & 1) ) ? 3 : c2;
 
                 for (j = start; j < end - 1; j += 2) {
-                    tmphist[c1][(int)ri->data[i][j]]++;
-                    tmphist[c2][(int)ri->data[i][j + 1]]++;
+                  int val1 = (int)ri->data[i][j];
+                  int val2 = (int)ri->data[i][j+1];
+                  if(i<10 && j<10) printf("  i=%d j=%d    c1=%d    c2=%d    val1=%d val2=%d\n",
+                      i, j, c1, c2, val1, val2);
+                    tmphist[c1][val1]++;
+                    tmphist[c2][val2]++;
                 }
 
                 if(j < end) { // last pixel of row if width is odd

@@ -20,6 +20,7 @@
 #include "rtengine.h"
 #include "iccstore.h"
 #include "dcp.h"
+#include "camdef.h"
 #include "camconst.h"
 #include "curves.h"
 #include "rawimagesource.h"
@@ -45,6 +46,7 @@ int init (const Settings* s, Glib::ustring baseDir, Glib::ustring userSettingsDi
     ICCStore::getInstance()->init (s->iccDirectory, Glib::build_filename (baseDir, "iccprofiles"), loadAll);
     DCPStore::getInstance()->init (Glib::build_filename (baseDir, "dcpprofiles"), loadAll);
 
+    CameraDefinitions::getInstance ()->init (baseDir);
     CameraConstantsStore::getInstance ()->init (baseDir, userSettingsDir);
     ProcParams::init ();
     Color::init ();

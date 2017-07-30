@@ -32,6 +32,7 @@ using namespace std;
 using namespace rtengine;
 
 #define TS 224
+#undef __SSE2__
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
@@ -66,6 +67,7 @@ SSEFUNCTION void RawImageSource::fast_demosaic(int winx, int winy, int winw, int
         plistener->setProgress (progress);
     }
 
+    printf("fast_demosaic() called, initialGain=%f\n", initialGain);
 
     const int bord = 5;
 
@@ -445,15 +447,20 @@ SSEFUNCTION void RawImageSource::fast_demosaic(int winx, int winy, int winw, int
 #ifdef __SSE2__
 
                     for (j = left + 2, cc = 2; j < right - 5; j += 4, cc += 4) {
+                      printf("    fast_demosaic: RGB output: j1(SSE2)=%d\n",j);
                         _mm_storeu_ps(&red[i][j], LVFU(redtile[rr * TS + cc]));
                         _mm_storeu_ps(&green[i][j], LVFU(greentile[rr * TS + cc]));
                         _mm_storeu_ps(&blue[i][j], LVFU(bluetile[rr * TS + cc]));
                     }
 
                     for (; j < right - 2; j++, cc++) {
+                      printf("    fast_demosaic: RGB output: j2(SSE2)=%d\n",j);
                         red[i][j] = redtile[rr * TS + cc];
                         green[i][j] = greentile[rr * TS + cc];
                         blue[i][j] = bluetile[rr * TS + cc];
+                        if(i<50 && j<50)
+                          printf("fast_demo: RGB(%d,%d)=%f,%f,%f\n",
+                            i, j, red[i][j], green[i][j], blue[i][j]);
                     }
 
 #else
@@ -462,6 +469,9 @@ SSEFUNCTION void RawImageSource::fast_demosaic(int winx, int winy, int winw, int
                         red[i][j] = redtile[rr * TS + cc];
                         green[i][j] = greentile[rr * TS + cc];
                         blue[i][j] = bluetile[rr * TS + cc];
+                        if(i<10 && j<10)
+                          printf("fast_demo: RGB(%d,%d)=%f,%f,%f\n",
+                            i, j, red[i][j], green[i][j], blue[i][j]);
                     }
 
 #endif

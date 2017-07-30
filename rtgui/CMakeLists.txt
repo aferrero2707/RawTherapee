@@ -150,6 +150,11 @@ set(NONCLISOURCEFILES
     )
 
 include_directories(BEFORE "${CMAKE_CURRENT_BINARY_DIR}")
+include_directories(
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/external
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/librawspeed
+    ${CMAKE_BINARY_DIR}/external/rawspeed/src
+    )
 
 if(APPLE)
     find_package(MacIntegration REQUIRED)
@@ -233,6 +238,7 @@ set_target_properties(rth-cli PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -DRAW
 
 # Add linked libraries dependencies to executables targets
 target_link_libraries(rth rtengine
+    rawspeed_static_dt
     ${CANBERRA-GTK_LIBRARIES}
     ${EXPAT_LIBRARIES}
     ${EXTRA_LIB_RTGUI}
@@ -254,6 +260,7 @@ target_link_libraries(rth rtengine
     )
 
 target_link_libraries(rth-cli rtengine
+    rawspeed_static_dt
     ${CAIROMM_LIBRARIES}
     ${EXPAT_LIBRARIES}
     ${EXTRA_LIB_RTGUI}

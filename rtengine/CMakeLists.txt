@@ -9,6 +9,16 @@ include_directories(${EXTRA_INCDIR}
     ${GTK_INCLUDE_DIRS}
     ${IPTCDATA_INCLUDE_DIRS}
     ${LCMS_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/external
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/librawspeed
+    ${CMAKE_BINARY_DIR}/external/rawspeed/src
+    )
+
+include_directories(BEFORE
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/external
+    ${PROJECT_SOURCE_DIR}/external/rawspeed/src/librawspeed
+    ${CMAKE_BINARY_DIR}/external/rawspeed/src
     )
 
 link_directories("${PROJECT_SOURCE_DIR}/rtexif"
@@ -33,6 +43,7 @@ set(RTENGINESOURCEFILES
     amaze_demosaic_RT.cc
     cJSON.c
     calc_distort.cc
+    camdef.cc
     camconst.cc
     cfa_linedn_RT.cc
     ciecam02.cc
