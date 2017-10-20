@@ -37,16 +37,15 @@ fix_pango()
 
 strip_binaries()
 {
-  chmod u+w -R "$appdir"
+  chmod u+w -R "$APPDIR"
   {
-    find $APPDIR/usr/bin/ -type f -name "gimp*" -print0
-    find $APPDIR/usr/bin/ -type f -name "python*" -print0
+    find $APPDIR/usr -type f -name "rawtherapee*" -print0
     find "$APPDIR" -type f -regex '.*\.so\(\.[0-9.]+\)?$' -print0
   } | xargs -0 --no-run-if-empty --verbose -n1 strip
 }
 
 
-apt-get install -y libiptcdata0-dev
+apt-get install -y libiptcdata0-dev curl fuse libfuse2
 
 mkdir -p /work/build/rt
 
@@ -80,11 +79,11 @@ cd $APP.AppDir
 
 export APPDIR=$(pwd)
 
-sudo chown -R $USER /${PREFIX}/
+#sudo chown -R $USER /${PREFIX}/
 
 cp -r /${PREFIX}/* ./usr/
-rm -f ./usr/bin/$LOWERAPP.real
-mv ./usr/bin/$LOWERAPP ./usr/bin/$LOWERAPP.real
+rm -f ./usr/$LOWERAPP.real
+mv ./usr/$LOWERAPP ./usr/$LOWERAPP.real
 
 cat > usr/bin/$LOWERAPP <<\EOF
 #! /bin/bash
@@ -114,7 +113,9 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 #ldd "$HERE/LOWERAPP.real"
 #echo -n "$HERE/LOWERAPP.real "
 #echo "$@"
-$HERE/LOWERAPP.real "$@"
+cd $HERE
+cd ..
+./LOWERAPP.real "$@"
 #gdb -ex "run" $HERE/LOWERAPP.real
 EOF
 sed -i -e "s|LOWERAPP|$LOWERAPP|g" usr/bin/$LOWERAPP
