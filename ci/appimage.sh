@@ -240,6 +240,10 @@ strip_binaries
 
 cd .. # Go out of AppImage
 
+cp -a $APPDIR /sources
+
+exit
+
 mkdir -p ../out/
 ARCH="x86_64"
 generate_appimage
