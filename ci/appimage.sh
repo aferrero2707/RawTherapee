@@ -58,7 +58,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_N
 make -j 2
 make install
 
-exit
+#exit
 
 mkdir -p /work/build/appimage
 cd /work/build/appimage
