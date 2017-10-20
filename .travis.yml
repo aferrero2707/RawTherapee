@@ -1,0 +1,17 @@
+language: generic
+
+matrix:
+    include:
+        - os: linux
+          dist: trusty
+          compiler: g++
+          sudo: required
+          services: docker
+          before_script:
+                - sudo docker run -it -v $(pwd):/sources photoflow/trusty-gtk3 bash /sources/ci/appimage.sh
+
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
+    

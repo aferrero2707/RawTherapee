@@ -298,9 +298,9 @@ if(WITH_SYSTEM_KLT)
 endif()
 
 # Check for libcanberra-gtk3 (sound events on Linux):
-if(UNIX AND(NOT APPLE))
-    pkg_check_modules(CANBERRA-GTK REQUIRED libcanberra-gtk3)
-endif()
+#if(UNIX AND(NOT APPLE))
+#    pkg_check_modules(CANBERRA-GTK REQUIRED libcanberra-gtk3)
+#endif()
 
 if(WITH_MYFILE_MMAP)
     add_definitions(-DMYFILE_MMAP)
