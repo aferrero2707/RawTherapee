@@ -23,9 +23,9 @@ echo "sudo chown -R $USER $APP.AppDir"
 sudo chown -R $USER $APP.AppDir
 ls -lh
 
-cd $APP.AppDir
+#cd $APP.AppDir
 
-export APPDIR=$(pwd)
+export APPDIR=$(pwd)/$APP.AppDir
 
 mkdir -p ../out/
 ARCH="x86_64"
