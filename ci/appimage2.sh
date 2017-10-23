@@ -18,10 +18,6 @@ wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./func
 . ./functions.sh
 
 pwd
-ls -lh
-echo "sudo chown -R $USER $APP.AppDir"
-sudo chown -R $USER $APP.AppDir
-ls -lh
 
 #cd $APP.AppDir
 
@@ -30,6 +26,12 @@ echo ""
 transfer $APP.tgz
 echo ""
 
+mkdir -p AppImage && cd AppImage
+tar xzf ../$APP.AppDir.tgz
+ls -lh
+echo "sudo chown -R $USER $APP.AppDir"
+sudo chown -R $USER $APP.AppDir
+ls -lh
 export APPDIR=$(pwd)/$APP.AppDir
 
 mkdir -p ../out/
