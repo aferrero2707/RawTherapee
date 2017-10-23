@@ -117,6 +117,7 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 #echo "$@"
 cd $HERE
 cd ..
+ldd ./LOWERAPP.real
 ./LOWERAPP.real "$@"
 #gdb -ex "run" $HERE/LOWERAPP.real
 EOF
