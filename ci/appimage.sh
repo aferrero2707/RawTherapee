@@ -46,7 +46,7 @@ strip_binaries()
 
 
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update
-sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 
+sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
 
 mkdir -p /work/build/rt
@@ -55,7 +55,7 @@ mkdir -p /work/build/rt
 #cd /work && wget https://downloads.sourceforge.net/lcms/lcms2-2.8.tar.gz && tar xzvf lcms2-2.8.tar.gz && cd lcms2-2.8 && ./configure --prefix=/app && make -j 2 && make install
 
 cd /work/build/rt
-cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=ON -DBUNDLE_BASE_INSTALL_DIR="/app" /sources
+cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=ON -DBUNDLE_BASE_INSTALL_DIR="/app" -DUSE_OLD_CXX_ABI="ON" /sources
 make -j 2
 make install
 
