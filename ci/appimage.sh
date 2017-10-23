@@ -223,7 +223,7 @@ echo "INSTALL_PREFIX before patching:"
 strings ./usr/$LOWERAPP.real | grep INSTALL_PREFIX
 
 find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched /usr in " \; -exec echo {} \; >& patch1.log
-find usr/ -type f -exec sed -i -e 's|/${PREFIX}/|././/|g' {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch1.log
+find usr/ -type f -exec sed -i -e "s|/${PREFIX}/|././/|g" {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch2.log
 
 # The fonts configuration should not be patched, copy back original one
 cp /$PREFIX/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
