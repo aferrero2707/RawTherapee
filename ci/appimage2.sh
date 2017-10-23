@@ -25,6 +25,11 @@ ls -lh
 
 #cd $APP.AppDir
 
+transfer $APP.AppDir.tgz
+echo ""
+transfer $APP.tgz
+echo ""
+
 export APPDIR=$(pwd)/$APP.AppDir
 
 mkdir -p ../out/
@@ -40,4 +45,5 @@ ls ../out/*
 ########################################################################
 
 transfer ../out/*
+echo ""
 echo "AppImage has been uploaded to the URL above; use something like GitHub Releases for permanent storage"
