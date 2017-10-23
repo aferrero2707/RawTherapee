@@ -174,13 +174,13 @@ cp -a /usr/share/mime usr/share
 # on all target systems
 ########################################################################
 
+copy_deps; copy_deps; copy_deps;
+
 cp -a /$PREFIX/lib/* usr/lib
 cp -a /$PREFIX/lib64/* usr/lib64
 #rm -rf $PREFIX
 rm -rf usr/lib/python*
 rm -rf usr/lib64/python*
-
-copy_deps; copy_deps; copy_deps;
 
 #ls usr/lib
 move_lib
