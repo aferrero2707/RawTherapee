@@ -182,10 +182,12 @@ rm -rf usr/lib64/python*
 
 copy_deps; copy_deps; copy_deps;
 
-ls usr/lib
+#ls usr/lib
 move_lib
 echo "After move_lib"
-ls usr/lib
+#ls usr/lib
+
+rm -rf usr/include usr/libexec usr/_jhbuild usr/share/doc
 
 ########################################################################
 # Delete stuff that should not go into the AppImage
@@ -220,8 +222,8 @@ pwd
 echo "INSTALL_PREFIX before patching:"
 strings ./usr/$LOWERAPP.real | grep INSTALL_PREFIX
 
-find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched /usr in " \; -exec echo {} \;
-find usr/ -type f -exec sed -i -e 's|/${PREFIX}/|././/|g' {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \;
+find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched /usr in " \; -exec echo {} \; >& patch1.log
+find usr/ -type f -exec sed -i -e 's|/${PREFIX}/|././/|g' {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch1.log
 
 # The fonts configuration should not be patched, copy back original one
 cp /$PREFIX/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
