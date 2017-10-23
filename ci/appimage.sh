@@ -84,8 +84,8 @@ export APPDIR=$(pwd)
 #sudo chown -R $USER /${PREFIX}/
 
 cp -r /${PREFIX}/* ./usr/
-rm -f ./usr/$LOWERAPP.real
-mv ./usr/$LOWERAPP ./usr/$LOWERAPP.real
+rm -f ./usr/bin/$LOWERAPP.real
+mv ./usr/bin/$LOWERAPP ./usr/bin/$LOWERAPP.real
 
 cat > usr/bin/$LOWERAPP <<\EOF
 #! /bin/bash
@@ -116,7 +116,6 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 #echo -n "$HERE/LOWERAPP.real "
 #echo "$@"
 cd $HERE
-cd ..
 ldd ./LOWERAPP.real
 ./LOWERAPP.real "$@"
 #gdb -ex "run" $HERE/LOWERAPP.real
