@@ -247,9 +247,9 @@ strip_binaries
 
 cd .. # Go out of AppImage
 
-tar czvf /sources/$APP.AppDir.tgz $APP.AppDir
+tar czf /sources/$APP.AppDir.tgz $APP.AppDir
 cd /
-tar czvf /sources/$APP.tgz $PREFIX
+tar czf /sources/$APP.tgz $PREFIX
 
 exit
 
