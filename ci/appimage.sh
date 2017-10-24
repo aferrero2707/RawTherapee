@@ -115,7 +115,7 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
 stdcxxver=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
 stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
-stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1
+stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)
 
 if [ x"$stdcxxnewest" = x"$stdcxxver2" ]; then
    export LD_LIBRARY_PATH=$HERE/../optional/libstdc++:$LD_LIBRARY_PATH
