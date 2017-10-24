@@ -21,10 +21,11 @@
 
 #ifdef WIN32
 #include <windows.h>
-#elif defined __APPLE__
-#include <sys/time.h>
+//#elif defined __APPLE__
 #else
-#include <ctime>
+#include <sys/time.h>
+//#else
+//#include <ctime>
 #endif
 
 class MyTime
@@ -52,13 +53,14 @@ public:
         LARGE_INTEGER ulf;
         QueryPerformanceCounter(&ulf);
         t = ulf.QuadPart;
-#elif defined __APPLE__
+//#elif defined __APPLE__
+#else
         struct timeval tv;
         gettimeofday(&tv, NULL);
         t.tv_sec = tv.tv_sec;
         t.tv_nsec = tv.tv_usec * 1000;
-#else
-        clock_gettime (CLOCK_REALTIME, &t);
+//#else
+//        clock_gettime (CLOCK_REALTIME, &t);
 #endif
     }
 
