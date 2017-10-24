@@ -112,12 +112,22 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 #echo "GDK_PIXBUF_MODULE_FILE: $GDK_PIXBUF_MODULE_FILE"
 #cat $GDK_PIXBUF_MODULE_FILE
 
+stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+stdcxxver=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1
+
+if [ x"$stdcxxnewest" = x"$stdcxxver2" ]; then
+   export LD_LIBRARY_PATH=$HERE/../optional/libstdc++:$LD_LIBRARY_PATH
+fi
+
 #ldd "$HERE/LOWERAPP.real"
 #echo -n "$HERE/LOWERAPP.real "
 #echo "$@"
 cd $HERE
-ldd ./LOWERAPP.real
-./LOWERAPP.real "$@"
+cd ..
+ldd ./bin/LOWERAPP.real
+./bin/LOWERAPP.real "$@"
 #gdb -ex "run" $HERE/LOWERAPP.real
 EOF
 sed -i -e "s|LOWERAPP|$LOWERAPP|g" usr/bin/$LOWERAPP
@@ -197,6 +207,12 @@ rm -rf usr/include usr/libexec usr/_jhbuild usr/share/doc
 # https://github.com/probonopd/AppImages/blob/master/excludelist
 move_blacklisted
 #delete_blacklisted
+
+stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+if [ x"$stdcxxlib" != "x" ]; then
+    mkdir -p usr/optional/libstdc++
+	cp -L "$stdcxxlib" usr/optional/libstdc++
+fi
 
 fix_pango
 
