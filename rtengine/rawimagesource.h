@@ -128,7 +128,7 @@ public:
     void        refinement_lassus (int PassCount);
     void        refinement(int PassCount);
 
-    bool        IsrgbSourceModified() const
+    bool        isRGBSourceModified() const
     {
         return rgbSourceModified;   // tracks whether cached rgb output of demosaic has been modified
     }
@@ -166,9 +166,9 @@ public:
         return ri->get_rotateDegree();
     }
 
-    ImageData*  getImageData ()
+    FrameData*  getImageData (unsigned int frameNum)
     {
-        return idata;
+        return idata->getFrameData (frameNum);
     }
     ImageMatrices* getImageMatrices ()
     {
@@ -233,6 +233,7 @@ protected:
 
     void cfa_linedn (float linenoiselevel);//Emil's line denoise
 
+    void green_equilibrate_global (array2D<float> &rawData);
     void green_equilibrate (float greenthresh, array2D<float> &rawData);//Emil's green equilibration
 
     void nodemosaic(bool bw);
