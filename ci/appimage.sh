@@ -45,23 +45,20 @@ strip_binaries()
 }
 
 
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update
-sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git liblensfun-dev
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
-
-mkdir -p /work/build/rt
-
 export PATH=/app/bin:/work/inst/bin:$PATH
 export LD_LIBRARY_PATH=/app/lib:/work/inst/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/app/lib/pkgconfig:/work/inst/lib/pkgconfig:$PKG_CONFIG_PATH
 
+(sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update && \
+sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git liblensfun-dev && \
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5) || exit 1
+
+(mkdir -p /work/build/rt && cd /work/build/rt) || exit 1
+
 #cd /work && wget https://cmake.org/files/v3.8/cmake-3.8.2.tar.gz && tar xzvf cmake-3.8.2.tar.gz && cd cmake-3.8.2 && ./bootstrap --prefix=/work/inst --parallel=2 && make -j 2 && make install
 #cd /work && wget https://downloads.sourceforge.net/lcms/lcms2-2.8.tar.gz && tar xzvf lcms2-2.8.tar.gz && cd lcms2-2.8 && ./configure --prefix=/app && make -j 2 && make install
 
-cd /work/build/rt
-cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/app" -DCMAKE_INSTALL_PREFIX="/app" -DUSE_OLD_CXX_ABI="ON" /sources
-make -j 2
-make install
+(cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/app" -DCMAKE_INSTALL_PREFIX="/app" -DUSE_OLD_CXX_ABI="ON" /sources && make -j 2 && make install) || exit 1
 
 #exit
 
