@@ -46,7 +46,7 @@ strip_binaries()
 
 
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update
-sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git
+sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git lensfun
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
 
 mkdir -p /work/build/rt
