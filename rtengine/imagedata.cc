@@ -568,7 +568,7 @@ FrameData::FrameData (rtexif::TagDirectory* frameRootDir_, rtexif::TagDirectory*
 #endif
             }
         }
-    } else if (photometric == PHOTOMETRIC_CFA) {
+    /*} else if (photometric == PHOTOMETRIC_CFA) {
         if (sampleformat == SAMPLEFORMAT_IEEEFP) {
             sampleFormat = IIOSF_FLOAT;
             isHDR = true;
@@ -581,7 +581,7 @@ FrameData::FrameData (rtexif::TagDirectory* frameRootDir_, rtexif::TagDirectory*
             } else if (bitspersample <= 16) {
                 sampleFormat = IIOSF_UNSIGNED_SHORT;
             }
-        }
+        }*/
     } else if (photometric == PHOTOMETRIC_LOGLUV) {
         if (compression == COMPRESSION_SGILOG24) {
             sampleFormat = IIOSF_LOGLUV24;
