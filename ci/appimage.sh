@@ -112,13 +112,22 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 #echo "GDK_PIXBUF_MODULE_FILE: $GDK_PIXBUF_MODULE_FILE"
 #cat $GDK_PIXBUF_MODULE_FILE
 
+export PATH=$PATH:/sbin:/usr/sbin
+
 stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+echo "System stdc++ library: \"$stdcxxlib\""
 stdcxxver=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+echo "System stdc++ library version: \"$stdcxxver\""
 stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+echo "Bundled stdc++ library version: \"$stdcxxver2\""
 stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)
+echo "Newest stdc++ library version: \"$stdcxxnewest\""
 
 if [ x"$stdcxxnewest" = x"$stdcxxver2" ]; then
+   echo "Using bundled stdc++ library"
    export LD_LIBRARY_PATH=$HERE/../optional/libstdc++:$LD_LIBRARY_PATH
+else
+   echo "Using system stdc++ library"
 fi
 
 #ldd "$HERE/LOWERAPP.real"
