@@ -124,11 +124,11 @@ echo "Bundled stdc++ library version: \"$stdcxxver2\""
 stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)
 echo "Newest stdc++ library version: \"$stdcxxnewest\""
 
-if [ x"$stdcxxnewest" = x"$stdcxxver2" ]; then
+if [ x"$stdcxxnewest" = x"$stdcxxver1" ]; then
+   echo "Using system stdc++ library"
+else
    echo "Using bundled stdc++ library"
    export LD_LIBRARY_PATH=$HERE/../optional/libstdc++:$LD_LIBRARY_PATH
-else
-   echo "Using system stdc++ library"
 fi
 
 #ldd "$HERE/LOWERAPP.real"
