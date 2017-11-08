@@ -29,6 +29,13 @@ matrix:
           env: TARGET_SYSTEM=Windows
           before_script:
             - sudo docker run -it -e "TRAVIS_BUILD_DIR=/sources" -e "TRAVIS_BRANCH=${TRAVIS_BRANCH}" -e "TRAVIS_COMMIT=${TRAVIS_COMMIT}" -v $(pwd):/sources photoflow/docker-zesty-mingw bash -c /sources/ci/package-w64.sh
+            - # check if zip file was successfully created
+            - # abort job with failure if not
+            - ls rawtherapee-w64*.zip
+          after_success:
+            - cd $TRAVIS_BUILD_DIR
+            - pwd
+            - ls rawtherapee-w64*.zip
             - wget -c https://github.com/aferrero2707/uploadtool/raw/master/upload_rotate.sh
             - bash  ./upload_rotate.sh "continuous" rawtherapee-w64*.zip
 
