@@ -37,7 +37,7 @@
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0600
 #endif
-#include <Shlobj.h>
+#include <shlobj.h>
 #endif
 
 // User's settings directory, including images' profiles if used

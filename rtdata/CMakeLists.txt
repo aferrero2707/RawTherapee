@@ -20,9 +20,9 @@ else()
     set(OPTIONSFILE "options/options.lin")
 endif()
 
-if(WIN32)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/WindowsInnoSetup.iss" DESTINATION ${BINDIR})
-endif()
+#if(WIN32)
+#    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/WindowsInnoSetup.iss" DESTINATION ${BINDIR})
+#endif()
 
 if(UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/icons/rawtherapee.desktop.in" "${CMAKE_CURRENT_BINARY_DIR}/rawtherapee.desktop")

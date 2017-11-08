@@ -267,7 +267,7 @@ endif()
 # Check for libraries:
 find_package(PkgConfig)
 if(WIN32)
-pkg_check_modules (GTK     REQUIRED gtk+-3.0>=3.22.24)
+pkg_check_modules (GTK     REQUIRED gtk+-3.0>=3.22.0)
 pkg_check_modules (GTKMM   REQUIRED gtkmm-3.0>=3.22)
 else()
 pkg_check_modules (GTK     REQUIRED gtk+-3.0>=3.16)

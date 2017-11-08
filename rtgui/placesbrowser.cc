@@ -21,7 +21,7 @@
 #ifdef WIN32
 #include <windows.h>
 #include <shlobj.h>
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #endif
 
 #include "guiutils.h"
