@@ -111,6 +111,8 @@ pwd
 ( cd $repackagedir ; rm -rf manifest )
 
 ( cd $repackagedir ; rm -rf src )
+
+( cd $repackagedir ; rm -rf share/gdb )
 echo "================="; echo ""
 
 # we need to copy the C++ runtime dlls in there
