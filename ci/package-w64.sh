@@ -24,12 +24,10 @@ mkdir -p /work/w64-build && cd /work/w64-build
 
 crossroad w64 w64-build --run=$TRAVIS_BUILD_DIR/ci/build-w64.sh
 
-ls /work/w64-build/RelWithDebInfo/rawtherapee.exe || exit 1
+ls /work/w64-build/Release/rawtherapee.exe || exit 1
 
 bundle_package=rawtherapee
-bundle_version="w64-$(date +%Y%m%d)_$(date +%H%M)-git-${TRAVIS_BRANCH}-${TRAVIS_COMMIT}"
-#bundle_version=0.2.7
-#bundle_version=$(cat checkout/PhotoFlow/VERSION | head -n 1)
+bundle_version="w64-$(date +%Y%m%d)_$(date +%H%M)-git-${TRAVIS_BRANCH}"
 
 # stuff is in here
 basedir=`pwd`
@@ -104,15 +102,7 @@ pwd
 ( cd $repackagedir/lib/gtk-2.0 ; find . -name "*.a" -exec rm {} \; )
 ( cd $repackagedir/lib/gtk-2.0 ; find . -name "*.h" -exec rm {} \; )
 
-( cd $repackagedir ; rm -rf make )
-
-( cd $repackagedir ; rm -rf man )
-
-( cd $repackagedir ; rm -rf manifest )
-
-( cd $repackagedir ; rm -rf src )
-
-( cd $repackagedir ; rm -rf share/gdb )
+( cd $repackagedir ; rm -rf make man manifest src bin share/gdb)
 echo "================="; echo ""
 
 # we need to copy the C++ runtime dlls in there
