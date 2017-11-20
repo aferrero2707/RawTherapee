@@ -52,14 +52,14 @@ echo "================="; echo ""
 echo "copying install area \"$installdir\""
 
 rm -rf $repackagedir
-cp -r $installdir $repackagedir
+(cp -r $installdir $repackagedir) || exit 1
 rm -rf $repackagedir/bin
 rm -rf $repackagedir/wine
 mkdir $repackagedir/bin
-cp -L $installdir/bin/* $repackagedir/bin
-cp -a /work/w64-build/RelWithDebInfo/* $repackagedir
-cp -L $installdir/lib/*.dll $repackagedir/
-cp -L $installdir/bin/*.dll $repackagedir/
+(cp -L $installdir/bin/* $repackagedir/bin) || exit 1
+(cp -a /work/w64-build/Release/* $repackagedir) || exit 1
+(cp -L $installdir/lib/*.dll $repackagedir/) || exit 1
+(cp -L $installdir/bin/*.dll $repackagedir/) || exit 1
 echo "================="; echo ""
 
 echo "Contents of \"$repackagedir\":"
@@ -74,7 +74,7 @@ echo "cleaning build \"$repackagedir\""
 if [ ! -e $repackagedir/bin ]; then echo "$repackagedir/bin not found."; exit; fi
 if [ ! -e $repackagedir/lib ]; then echo "$repackagedir/lib not found."; exit; fi
 
-(cd $repackagedir/bin; wget ftp://ftp.equation.com/gdb/64/gdb.exe)
+#(cd $repackagedir/bin; wget ftp://ftp.equation.com/gdb/64/gdb.exe)
 
 echo "Before cleaning $repackagedir/bin"
 pwd
