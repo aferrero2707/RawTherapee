@@ -117,8 +117,8 @@ export PATH=$PATH:/sbin:/usr/sbin
 
 stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
 echo "System stdc++ library: \"$stdcxxlib\""
-stdcxxver=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
-echo "System stdc++ library version: \"$stdcxxver\""
+stdcxxver1=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+echo "System stdc++ library version: \"$stdcxxver1\""
 stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
 echo "Bundled stdc++ library version: \"$stdcxxver2\""
 stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)
@@ -222,6 +222,12 @@ stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print
 if [ x"$stdcxxlib" != "x" ]; then
     mkdir -p usr/optional/libstdc++
 	cp -L "$stdcxxlib" usr/optional/libstdc++
+fi
+
+gomplib=$(ldconfig -p | grep 'libgomp.so.1 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+if [ x"$gomplib" != "x" ]; then
+    mkdir -p usr/optional/libstdc++
+	cp -L "$gomplib" usr/optional/libstdc++
 fi
 
 fix_pango
