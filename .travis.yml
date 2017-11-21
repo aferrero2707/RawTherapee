@@ -9,8 +9,8 @@ matrix:
           services: docker
           env: TARGET_SYSTEM=Linux
           before_script:
-                - travis_wait 120 sleep infinity & sudo docker pull photoflow/trusty-gtk3-step3
-                - sudo docker run -it -v $(pwd):/sources photoflow/trusty-gtk3-step3 bash /sources/ci/appimage.sh
+                - travis_wait 120 sleep infinity & sudo docker pull photoflow/docker-trusty-gtk3
+                - sudo docker run -it -v $(pwd):/sources photoflow/docker-trusty-gtk3 bash /sources/ci/appimage.sh
                 - bash ci/appimage2.sh
           after_success:
               - cd $TRAVIS_BUILD_DIR
