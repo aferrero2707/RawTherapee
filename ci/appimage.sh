@@ -49,16 +49,16 @@ export PATH=/app/bin:/work/inst/bin:$PATH
 export LD_LIBRARY_PATH=/app/lib:/work/inst/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/app/lib/pkgconfig:/work/inst/lib/pkgconfig:$PKG_CONFIG_PATH
 
-(sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update && \
-sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 gcc-5 g++-5 git liblensfun-dev && \
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5) || exit 1
+#(sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update && \
+(sudo apt-get -y update && sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 git) || exit 1
+#sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5) || exit 1
 
 #cd /work && wget https://cmake.org/files/v3.8/cmake-3.8.2.tar.gz && tar xzvf cmake-3.8.2.tar.gz && cd cmake-3.8.2 && ./bootstrap --prefix=/work/inst --parallel=2 && make -j 2 && make install
 #cd /work && wget https://downloads.sourceforge.net/lcms/lcms2-2.8.tar.gz && tar xzvf lcms2-2.8.tar.gz && cd lcms2-2.8 && ./configure --prefix=/app && make -j 2 && make install
 
 (cd /work && rm -rf lensfun* && wget https://sourceforge.net/projects/lensfun/files/0.3.2/lensfun-0.3.2.tar.gz && tar xzvf lensfun-0.3.2.tar.gz && cd lensfun-0.3.2 && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/app" ../ && make -j 2 && make install) || exit 1
 
-(mkdir -p /work/build/rt && cd /work/build/rt && cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/app" -DCMAKE_INSTALL_PREFIX="/app" -DUSE_OLD_CXX_ABI="OFF" /sources && make -j 2 && make install) || exit 1
+(mkdir -p /work/build/rt && cd /work/build/rt && cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/app" -DCMAKE_INSTALL_PREFIX="/app" -DUSE_OLD_CXX_ABI="ON" /sources && make -j 2 && make install) || exit 1
 
 #exit
 
@@ -115,11 +115,12 @@ GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loade
 
 export PATH=$PATH:/sbin:/usr/sbin
 
+# libstdc++ version detection
 stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
 echo "System stdc++ library: \"$stdcxxlib\""
-stdcxxver1=$(strings "$stdcxxlib" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+stdcxxver1=$(strings "$stdcxxlib" | grep '^GLIBCXX_[0-9].[0-9]*' | cut -d"_" -f 2 | sort -V | tail -n 1)
 echo "System stdc++ library version: \"$stdcxxver1\""
-stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep LIBCXX_3 | cut -d"_" -f 2 | sort -V | tail -n 1)
+stdcxxver2=$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep '^GLIBCXX_[0-9].[0-9]*' | cut -d"_" -f 2 | sort -V | tail -n 1)
 echo "Bundled stdc++ library version: \"$stdcxxver2\""
 stdcxxnewest=$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)
 echo "Newest stdc++ library version: \"$stdcxxnewest\""
@@ -219,12 +220,14 @@ move_blacklisted
 #delete_blacklisted
 
 stdcxxlib=$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+echo "stdcxxlib: $stdcxxlib"
 if [ x"$stdcxxlib" != "x" ]; then
     mkdir -p usr/optional/libstdc++
 	cp -L "$stdcxxlib" usr/optional/libstdc++
 fi
 
 gomplib=$(ldconfig -p | grep 'libgomp.so.1 (libc6,x86-64)'| awk 'NR==1{print $NF}')
+echo "gomplib: $gomplib"
 if [ x"$gomplib" != "x" ]; then
     mkdir -p usr/optional/libstdc++
 	cp -L "$gomplib" usr/optional/libstdc++
