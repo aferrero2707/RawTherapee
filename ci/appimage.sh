@@ -45,25 +45,25 @@ strip_binaries()
 }
 
 
-export PATH=/app/bin:/work/inst/bin:$PATH
-export LD_LIBRARY_PATH=/app/lib:/work/inst/lib:$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=/app/lib/pkgconfig:/work/inst/lib/pkgconfig:$PKG_CONFIG_PATH
+export PATH=/$PREFIX/bin:/work/inst/bin:$PATH
+export LD_LIBRARY_PATH=/$PREFIX/lib:/work/inst/lib:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=/$PREFIX/lib/pkgconfig:/work/inst/lib/pkgconfig:$PKG_CONFIG_PATH
 
 #(sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get -y update && \
-(sudo apt-get -y update && sudo apt-get install -y libiptcdata0-dev curl fuse libfuse2 git) || exit 1
+(sudo apt-get -y update && sudo apt-get install -y libiptcdata0-dev wget curl fuse libfuse2 git) || exit 1
 #sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5) || exit 1
 
 #cd /work && wget https://cmake.org/files/v3.8/cmake-3.8.2.tar.gz && tar xzvf cmake-3.8.2.tar.gz && cd cmake-3.8.2 && ./bootstrap --prefix=/work/inst --parallel=2 && make -j 2 && make install
 #cd /work && wget https://downloads.sourceforge.net/lcms/lcms2-2.8.tar.gz && tar xzvf lcms2-2.8.tar.gz && cd lcms2-2.8 && ./configure --prefix=/app && make -j 2 && make install
 
-(cd /work && rm -rf lensfun* && wget https://sourceforge.net/projects/lensfun/files/0.3.2/lensfun-0.3.2.tar.gz && tar xzvf lensfun-0.3.2.tar.gz && cd lensfun-0.3.2 && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/app" ../ && make -j 2 && make install) || exit 1
+(cd /work && rm -rf lensfun* && wget https://sourceforge.net/projects/lensfun/files/0.3.2/lensfun-0.3.2.tar.gz && tar xzvf lensfun-0.3.2.tar.gz && cd lensfun-0.3.2 && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/$PREFIX" ../ && make -j 2 && make install) || exit 1
 
-(mkdir -p /work/build/rt && cd /work/build/rt && cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/app" -DCMAKE_INSTALL_PREFIX="/app" -DUSE_OLD_CXX_ABI="ON" /sources && make -j 2 && make install) || exit 1
+(mkdir -p /sources/build/appimage && cd /sources/build/appimage && cmake -DCMAKE_BUILD_TYPE=Release -DCACHE_NAME_SUFFIX="_appimage" -DPROC_TARGET_NUMBER=0 -DBUILD_BUNDLE=OFF -DBUNDLE_BASE_INSTALL_DIR="/$PREFIX" -DCMAKE_INSTALL_PREFIX="/$PREFIX" -DUSE_OLD_CXX_ABI="OFF" /sources && make -j 2 install) || exit 1
 
 #exit
 
-mkdir -p /work/build/appimage
-cd /work/build/appimage
+mkdir -p /sources/build/appimage
+cd /sources/build/appimage
 cp /sources/ci/excludelist .
 
 export ARCH=$(arch)
@@ -73,6 +73,7 @@ export APPIMAGEBASE=$(pwd)
 APP=RawTherapee
 LOWERAPP=${APP,,}
 
+rm -rf $APP.AppDir
 mkdir -p $APP.AppDir/usr/
 
 wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh
@@ -84,9 +85,11 @@ export APPDIR=$(pwd)
 
 #sudo chown -R $USER /${PREFIX}/
 
-cp -r /${PREFIX}/* ./usr/
-rm -f ./usr/bin/$LOWERAPP.real
-mv ./usr/bin/$LOWERAPP ./usr/bin/$LOWERAPP.real
+#cp -r /${PREFIX}/* ./usr/
+#rm -f ./usr/bin/$LOWERAPP.real
+#mv ./usr/bin/$LOWERAPP ./usr/bin/$LOWERAPP.real
+
+(mkdir -p ./usr/bin && cp -a /${PREFIX}/bin/$LOWERAPP ./usr/bin/$LOWERAPP.real) || exit 1
 
 cat > usr/bin/$LOWERAPP <<\EOF
 #! /bin/bash
@@ -107,11 +110,15 @@ export PANGO_LIBDIR=$HERE/../lib
 export GCONV_PATH=$HERE/../lib/gconv
 #echo "GCONV_PATH=${GCONV_PATH}"
 
-GDK_PIXBUF_MODULEDIR=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
-GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache
+export GDK_PIXBUF_MODULEDIR=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
+export GDK_PIXBUF_MODULE_FILE=$HERE/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache
 #echo "GDK_PIXBUF_MODULEDIR: $GDK_PIXBUF_MODULEDIR"
 #echo "GDK_PIXBUF_MODULE_FILE: $GDK_PIXBUF_MODULE_FILE"
 #cat $GDK_PIXBUF_MODULE_FILE
+
+if [ -e /etc/fonts/fonts.conf ]; then
+  export FONTCONFIG_PATH=/etc/fonts
+fi
 
 export PATH=$PATH:/sbin:/usr/sbin
 
@@ -145,6 +152,11 @@ sed -i -e "s|LOWERAPP|$LOWERAPP|g" usr/bin/$LOWERAPP
 chmod u+x usr/bin/$LOWERAPP
 
 
+# Copy deskop file and application icon
+(mkdir -p usr/share/applications/ && cp /$PREFIX/share/applications/rawtherapee.desktop usr/share/applications) || exit 1
+(mkdir -p usr/share/icons && cp -r /$PREFIX/share/icons/hicolor usr/share/icons) || exit 1
+
+
 ########################################################################
 # Copy desktop and icon file to AppDir for AppRun to pick them up
 ########################################################################
@@ -168,15 +180,48 @@ cd ./$APP.AppDir/
 
 #cp /usr/lib/x86_64-linux-gnu/libg*k-3.so.0 usr/lib/x86_64-linux-gnu/
 
+########################################################################
+# Copy in the dependencies that cannot be assumed to be available
+# on all target systems
+########################################################################
+
+copy_deps; copy_deps; copy_deps;
+
+#exit
+
+cp -L ./lib/x86_64-linux-gnu/*.* ./usr/lib; rm -rf ./lib/x86_64-linux-gnu
+cp -L ./lib/*.* ./usr/lib; rm -rf ./lib;
+cp -L ./usr/lib/x86_64-linux-gnu/*.* ./usr/lib; rm -rf ./usr/lib/x86_64-linux-gnu;
+cp -L ./$PREFIX/lib/x86_64-linux-gnu/*.* ./usr/lib; rm -rf ./$PREFIX/lib/x86_64-linux-gnu;
+cp -L ./$PREFIX/lib/*.* ./usr/lib; rm -rf ./$PREFIX/lib;
+
 # Compile Glib schemas
 ( mkdir -p usr/share/glib-2.0/schemas/ ; cd usr/share/glib-2.0/schemas/ ; glib-compile-schemas . )
 
 
 cp -a /usr/lib/x86_64-linux-gnu/gconv usr/lib
 
-mkdir -p usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0
-cp -a /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0
-cp -a /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0
+gdk_pixbuf_moduledir=$(pkg-config --variable=gdk_pixbuf_moduledir gdk-pixbuf-2.0)
+gdk_pixbuf_cache_file=$(pkg-config --variable=gdk_pixbuf_cache_file gdk-pixbuf-2.0)
+gdk_pixbuf_libdir_bundle=lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0
+gdk_pixbuf_cache_file_bundle=usr/${gdk_pixbuf_libdir_bundle}/loaders.cache
+
+mkdir -p "usr/${gdk_pixbuf_libdir_bundle}"
+cp -a "$gdk_pixbuf_moduledir" "usr/${gdk_pixbuf_libdir_bundle}"
+cp -a "$gdk_pixbuf_cache_file" "usr/${gdk_pixbuf_libdir_bundle}"
+#mkdir -p usr/lib/gdk-pixbuf-2.0/2.10.0
+#cp -a /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders usr/lib/gdk-pixbuf-2.0/2.10.0
+#cp -a /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache usr/lib/gdk-pixbuf-2.0/2.10.0
+
+for m in $(ls "usr/${gdk_pixbuf_libdir_bundle}"/loaders/*.so); do
+  sofile=$(basename "$m")
+  sed -i -e"s|${gdk_pixbuf_moduledir}/${sofile}|./${gdk_pixbuf_libdir_bundle}/loaders/${sofile}|g" "$gdk_pixbuf_cache_file_bundle"
+done
+
+cat "$gdk_pixbuf_cache_file_bundle"
+
+ls usr/${gdk_pixbuf_libdir_bundle}/loaders
+exit
 
 # Copy the pixmap theme engine
 mkdir -p usr/lib/gtk-2.0/engines
@@ -190,23 +235,20 @@ fi
 mkdir -p usr/share
 cp -a /usr/share/mime usr/share
 
-########################################################################
-# Copy in the dependencies that cannot be assumed to be available
-# on all target systems
-########################################################################
+(mkdir -p usr/share && cp -a /$PREFIX/share/rawtherapee usr/share) || exit 1
 
-copy_deps; copy_deps; copy_deps;
-
-cp -a /$PREFIX/lib/* usr/lib
-cp -a /$PREFIX/lib64/* usr/lib64
+#cp -a /$PREFIX/lib/* usr/lib
+#cp -a /$PREFIX/lib64/* usr/lib64
 #rm -rf $PREFIX
-rm -rf usr/lib/python*
-rm -rf usr/lib64/python*
+#rm -rf usr/lib/python*
+#rm -rf usr/lib64/python*
 
-#ls usr/lib
+ls usr/lib
 move_lib
 echo "After move_lib"
-#ls usr/lib
+ls usr/lib
+
+#exit
 
 rm -rf usr/include usr/libexec usr/_jhbuild usr/share/doc
 
@@ -261,7 +303,11 @@ find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched
 find usr/ -type f -exec sed -i -e "s|/${PREFIX}/|././/|g" {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch2.log
 
 # The fonts configuration should not be patched, copy back original one
-cp /$PREFIX/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
+if [ -e /$PREFIX/etc/fonts/fonts.conf ]; then
+  cp /$PREFIX/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
+else
+  cp /$usr/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
+fi
 
 # Workaround for:
 # ImportError: /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0: undefined symbol: XRRGetMonitors
@@ -271,7 +317,7 @@ cp $(ldconfig -p | grep libgtk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs) ./usr/lib
 
 # Strip binaries.
 echo "APPDIR: $APPDIR"
-strip_binaries
+#strip_binaries
 
 
 
