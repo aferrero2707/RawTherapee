@@ -221,7 +221,7 @@ done
 cat "$gdk_pixbuf_cache_file_bundle"
 
 ls usr/${gdk_pixbuf_libdir_bundle}/loaders
-exit
+#exit
 
 # Copy the pixmap theme engine
 mkdir -p usr/lib/gtk-2.0/engines
