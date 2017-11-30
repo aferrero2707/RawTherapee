@@ -53,6 +53,12 @@ export PKG_CONFIG_PATH=/$PREFIX/lib/pkgconfig:/work/inst/lib/pkgconfig:$PKG_CONF
 (sudo apt-get -y update && sudo apt-get install -y libiptcdata0-dev wget curl fuse libfuse2 git) || exit 1
 #sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5) || exit 1
 
+locale-gen en_US.UTF-8
+export LANG=en_US.UTF-8 
+export LANGUAGE=en_US:en
+export LC_ALL=en_US.UTF-8
+
+
 #cd /work && wget https://cmake.org/files/v3.8/cmake-3.8.2.tar.gz && tar xzvf cmake-3.8.2.tar.gz && cd cmake-3.8.2 && ./bootstrap --prefix=/work/inst --parallel=2 && make -j 2 && make install
 #cd /work && wget https://downloads.sourceforge.net/lcms/lcms2-2.8.tar.gz && tar xzvf lcms2-2.8.tar.gz && cd lcms2-2.8 && ./configure --prefix=/app && make -j 2 && make install
 
@@ -236,6 +242,13 @@ mkdir -p usr/share
 cp -a /usr/share/mime usr/share
 
 (mkdir -p usr/share && cp -a /$PREFIX/share/rawtherapee usr/share) || exit 1
+
+/$PREFIX/bin/lensfun-update-data
+mkdir -p usr/share/lensfun/version_1
+cp -a /var/lib/lensfun-updates/version_1/* usr/share/lensfun/version_1
+echo "Contents of updated lensfun database:"
+ls usr/share/lensfun/version_1
+
 
 #cp -a /$PREFIX/lib/* usr/lib
 #cp -a /$PREFIX/lib64/* usr/lib64
