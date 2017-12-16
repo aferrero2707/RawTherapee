@@ -333,8 +333,10 @@ find usr/ -type f -exec sed -i -e "s|/${PREFIX}/|././/|g" {} \; -exec echo -n "P
 
 # The fonts configuration should not be patched, copy back original one
 if [ -e /$PREFIX/etc/fonts/fonts.conf ]; then
+  mkdir -p usr/etc/fonts
   cp /$PREFIX/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
-else
+elif [ -e /usr/etc/fonts/fonts.conf ]; then
+  mkdir -p usr/etc/fonts
   cp /usr/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf
 fi
 
@@ -345,7 +347,7 @@ cp $(ldconfig -p | grep libgtk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs) ./usr/lib
 
 
 # Strip binaries.
-strip_binaries
+#strip_binaries
 
 
 ########################################################################
