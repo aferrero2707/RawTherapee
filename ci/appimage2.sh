@@ -1,46 +1,51 @@
 ########################################################################
 # Package the binaries built on Travis-CI as an AppImage
-# By Simon Peter 2016
+# By Andrea Ferrero 2017
 # For more information, see http://appimage.org/
 ########################################################################
 
 
-PREFIX=app
-
-export ARCH=$(arch)
-
-export APPIMAGEBASE=$(pwd)
-
 APP=RawTherapee
 LOWERAPP=${APP,,}
 
-wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh
-. ./functions.sh
+########################################################################
+# prefix (without the leading "/") in which RawTherapee and its dependencies are installed
+########################################################################
+
+export PREFIX=app
+
+
+# get system architecture from ???
+export ARCH=$(arch)
 
 pwd
 
-#cd $APP.AppDir
+########################################################################
+# Go into the folder created when running the Docker container
+########################################################################
 
-transfer $APP.AppDir.tgz
-echo ""
-transfer $APP.tgz
-echo ""
-
-mkdir -p AppImage && cd AppImage
-tar xzf ../$APP.AppDir.tgz
-ls -lh
+cd build/appimage
+export APPIMAGEBASE=$(pwd)
 echo "sudo chown -R $USER $APP.AppDir"
 sudo chown -R $USER $APP.AppDir
-ls -lh
 export APPDIR=$(pwd)/$APP.AppDir
+
+
+########################################################################
+# get the latest version of the AppImage helper functions,
+# or use a fallback copy if not available
+########################################################################
+
+(wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh) || (cp -a ${TRAVIS_BUILD_DIR}/ci/functions.sh ./functions.sh)
+. ./functions.sh
+
 
 ########################################################################
 # Determine the version of the app; also include needed glibc version
 ########################################################################
 
 GLIBC_NEEDED=$(glibc_needed)
-VERSION=git-${TRAVIS_BRANCH}-$(date +%Y%m%d)_$(date +%H%M)-${TRAVIS_COMMIT}.glibc${GLIBC_NEEDED}
-#VERSION=${RELEASE_VERSION}-glibc$GLIBC_NEEDED
+VERSION=git-${TRAVIS_BRANCH}-$(date +%Y%m%d)_$(date +%H%M)-glibc${GLIBC_NEEDED}
 
 
 mkdir -p ../out/
