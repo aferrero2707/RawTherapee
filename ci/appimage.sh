@@ -282,7 +282,7 @@ move_lib
 # Fix path of pango modules
 ########################################################################
 
-fix_pango
+patch_pango
 
 
 ########################################################################
@@ -347,10 +347,12 @@ cp $(ldconfig -p | grep libgtk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs) ./usr/lib
 
 
 # Strip binaries.
-#strip_binaries
+strip_binaries
 
 
 ########################################################################
 # AppDir complete
 # Packaging it as an AppImage cannot be done within a Docker container
 ########################################################################
+
+exit 0
