@@ -23,15 +23,21 @@ pwd
 echo ""; echo "ls:"
 ls
 echo ""
+echo ""; echo "ls -lh build:"
+ls -lh build
+echo ""
+echo ""; echo "ls -lh build/appimage:"
+ls -lh build/appimage
+echo ""
 
 ########################################################################
 # Go into the folder created when running the Docker container
 ########################################################################
 
+echo "sudo chown -R $USER build/appimage"
+sudo chown -R $USER build/appimage
 cd build/appimage
 export APPIMAGEBASE=$(pwd)
-echo "sudo chown -R $USER $APP.AppDir"
-sudo chown -R $USER $APP.AppDir
 export APPDIR=$(pwd)/$APP.AppDir
 
 
