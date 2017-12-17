@@ -34,8 +34,8 @@ echo ""
 # Go into the folder created when running the Docker container
 ########################################################################
 
-echo "sudo chown -R $USER build/appimage"
-sudo chown -R $USER build/appimage
+echo "sudo chown -R $USER build"
+sudo chown -R $USER build
 cd build/appimage
 export APPIMAGEBASE=$(pwd)
 export APPDIR=$(pwd)/$APP.AppDir
