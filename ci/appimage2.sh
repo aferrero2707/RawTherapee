@@ -18,7 +18,11 @@ export PREFIX=app
 # get system architecture from ???
 export ARCH=$(arch)
 
+echo ""; echo "current directory:"
 pwd
+echo ""; echo "ls:"
+ls
+echo ""
 
 ########################################################################
 # Go into the folder created when running the Docker container
