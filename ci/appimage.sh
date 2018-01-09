@@ -35,7 +35,7 @@ delete_blacklisted2()
   ls $APPIMAGEBASE
   BLACKLISTED_FILES=$(cat "$APPIMAGEBASE/excludelist" | sed '/^\s*$/d' | sed '/^#.*$/d')
   echo $BLACKLISTED_FILES
-  for FILE in $BLACKLISTED_FILES ; do
+  for FILE in $BLACKLISTED_FILES; do
     FOUND=$(find . -type f -name "${FILE}" 2>/dev/null)
     if [ ! -z "$FOUND" ] ; then
       echo "Removing blacklisted ${FOUND}"
