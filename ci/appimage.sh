@@ -104,7 +104,7 @@ cmake \
     -DCMAKE_BUILD_TYPE="release" \
     -DCMAKE_INSTALL_PREFIX="/${PREFIX}" \
     ../ || exit 1
-make --jobs=2 || exit 1
+make -j 2 || exit 1
 make install || exit 1
 
 # RawTherapee build and install
