@@ -104,7 +104,7 @@ cmake \
     -DCMAKE_BUILD_TYPE="release" \
     -DCMAKE_INSTALL_PREFIX="/${PREFIX}" \
     ../ || exit 1
-make -j 2 || exit 1
+make --jobs=2 || exit 1
 make install || exit 1
 
 # RawTherapee build and install
@@ -122,7 +122,7 @@ cmake \
     -DWITH_SAN="OFF" \
     -DWITH_SYSTEM_KLT="OFF" \
     /sources || exit 1
-make --jobs= 2 || exit 1
+make --jobs=2 || exit 1
 make install || exit 1
 
 # Create a folder in the shared area where the AppImage structure will be copied
