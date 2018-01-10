@@ -49,8 +49,8 @@ delete_blacklisted()
     while IFS= read -r line; do
         find . -type f -name "${line}" -delete
     done < <(cat "$APPIMAGEBASE/excludelist" | sed '/^[[:space:]]*$/d' | sed '/^#.*$/d')
-# TODO Try this, its cleaner if it works:
-#    done < "$APPIMAGEBASE/excludelist" | sed '/^[[:space:]]*$/d' | sed '/^#.*$/d'
+    # TODO Try this, its cleaner if it works:
+    #done < "$APPIMAGEBASE/excludelist" | sed '/^[[:space:]]*$/d' | sed '/^#.*$/d'
 }
 
 

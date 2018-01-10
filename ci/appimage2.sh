@@ -9,9 +9,9 @@
 
 # Fail handler
 die () {
-  printf '%s\n' "" "Aborting!" ""
-  set +x
-  exit 1
+    printf '%s\n' "" "Aborting!" ""
+    set +x
+    exit 1
 }
 
 trap die HUP INT QUIT ABRT TERM
