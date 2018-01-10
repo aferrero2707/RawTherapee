@@ -1,75 +1,76 @@
+#!/usr/bin/env bash
+
 ########################################################################
 # Package the binaries built on Travis-CI as an AppImage
-# By Andrea Ferrero 2017
+# By Andrea Ferrero and Morgan Hardwood 2017-2018
 # For more information, see http://appimage.org/
+# Report issues to https://github.com/Beep6581/RawTherapee/issues
 ########################################################################
 
+# Fail handler
+die () {
+  printf '%s\n' "" "Aborting!" ""
+  set +x
+  exit 1
+}
 
-APP=RawTherapee
-LOWERAPP=${APP,,}
+trap die HUP INT QUIT ABRT TERM
 
-########################################################################
-# prefix (without the leading "/") in which RawTherapee and its dependencies are installed
-########################################################################
+# Enable debugging output until this is ready for merging
+set -x
 
-export PREFIX=app
+# Program name
+APP="RawTherapee"
+# TODO Seems unused
+#LOWERAPP=${APP,,}
 
+# Prefix (without the leading "/") in which RawTherapee and its dependencies are installed:
+export PREFIX="${APP}"
 
-# get system architecture from ???
-export ARCH=$(arch)
+#TODO This seems like it does nothing, as "arch" is not set, but does get set later to x86_64
+# Get system architecture from ???
+#export ARCH="$(arch)"
 
-echo ""; echo "current directory:"
+# Print some info:
+printf '%s\n' "" "Current directory:"
 pwd
-echo ""; echo "ls:"
+printf '%s\n' "" "ls:"
 ls
-echo ""
-echo ""; echo "ls -lh build:"
+printf '%s\n' "" "ls -lh build:"
 ls -lh build
-echo ""
-echo ""; echo "ls -lh build/appimage:"
+printf '%s\n' "" "ls -lh build/appimage:"
 ls -lh build/appimage
-echo ""
 
-########################################################################
-# Go into the folder created when running the Docker container
-########################################################################
+# Go into the folder created when running the Docker container:
+printf '%s\n' "" "sudo chown -R $USER build"
+sudo chown -R "$USER" build || exit 1
+cd build/appimage || exit 1
 
-echo "sudo chown -R $USER build"
-sudo chown -R $USER build
-cd build/appimage
-export APPIMAGEBASE=$(pwd)
-export APPDIR=$(pwd)/$APP.AppDir
+export APPIMAGEBASE="$(pwd)"
+export APPDIR="$(pwd)/${APP}.AppDir"
 
+# Get the latest version of the AppImage helper functions,
+# or use a fallback copy if not available:
+if ! wget "https://github.com/probonopd/AppImages/raw/master/functions.sh" --output-document="./functions.sh"; then
+    cp -a "${TRAVIS_BUILD_DIR}/ci/functions.sh" ./functions.sh || exit 1
+fi
 
-########################################################################
-# get the latest version of the AppImage helper functions,
-# or use a fallback copy if not available
-########################################################################
-
-(wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh) || (cp -a ${TRAVIS_BUILD_DIR}/ci/functions.sh ./functions.sh)
+# Source the script:
 . ./functions.sh
 
-
-########################################################################
-# Determine the version of the app; also include needed glibc version
-########################################################################
-
-GLIBC_NEEDED=$(glibc_needed)
-VERSION=git-${TRAVIS_BRANCH}-$(date +%Y%m%d)_$(date +%H%M)-glibc${GLIBC_NEEDED}
-
-
-mkdir -p ../out/
+# Generate AppImage; this expects $ARCH, $APP and $VERSION to be set
+glibcVer="$(glibc_needed)"
+ver="git-${TRAVIS_BRANCH}-$(date '+%Y%m%d_%H%M')-glibc${glibcVer}"
 ARCH="x86_64"
-generate_appimage
+VERSION="${ver}"
+mkdir -p ../out/ || exit 1
+generate_appimage || exit 1
 #generate_type2_appimage
 
 pwd
 ls ../out/*
 
-########################################################################
 # Upload the AppDir
-########################################################################
-
 transfer ../out/*
-echo ""
-echo "AppImage has been uploaded to the URL above; use something like GitHub Releases for permanent storage"
+
+printf '%s\n' "" "The AppImage has been uploaded to the URL above." ""
