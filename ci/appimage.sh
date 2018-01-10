@@ -24,8 +24,11 @@ APP="RawTherapee"
 LOWERAPP=${APP,,}
 
 # TODO was: PREFIX=app .......?!
+# PREFIX must be set to a 3-character string that represents the path where all compiled code,
+# including RT, is installed. For example, if PREFIX=zyx it means that RT is installed under /zyx
+
 # Prefix (without the leading "/") in which RawTherapee and its dependencies are installed:
-export PREFIX="${APP}"
+export PREFIX="zyx"
 
 # Get the latest version of the AppImage helper functions,
 # or use a fallback copy if not available:
@@ -128,10 +131,6 @@ cd /sources/build/appimage || exit 1
 cp /sources/ci/excludelist . || exit 1
 export APPIMAGEBASE="$(pwd)"
 
-# TODO arch is not set, or...?
-# get system architecture from ???
-#export ARCH="$(arch)"
-
 # Remove old AppDir structure (if existing)
 rm -rf "${APP}.AppDir"
 mkdir -p "${APP}.AppDir/usr/"
@@ -190,9 +189,9 @@ mkdir -p usr/share/icons
 cp -r "/${PREFIX}/share/icons/hicolor" "usr/share/icons" || exit 1
 
 # TODO Might want to "|| exit 1" these, and generate_status
-get_apprun
-get_desktop
-get_icon
+get_apprun || exit 1
+get_desktop || exit 1
+get_icon || exit 1
 
 # Other application-specific finishing touches
 cd ..
@@ -201,7 +200,6 @@ cd "$APPDIR" || exit 1
 
 # Copy in the dependencies that cannot be assumed to be available
 # on all target systems
-# TODO It's too late to figure this out, does each run really yield a different result?
 copy_deps; copy_deps; copy_deps;
 
 cp -L ./lib/x86_64-linux-gnu/*.* ./usr/lib
