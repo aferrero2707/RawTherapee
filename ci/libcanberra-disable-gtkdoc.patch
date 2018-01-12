@@ -1,0 +1,19 @@
+*** libcanberra-0.30/Makefile.in	Tue Sep 25 00:27:22 2012
+--- libcanberra-0.30.new/Makefile.in	Fri Jan 12 16:28:52 2018
+***************
+*** 392,398 ****
+  	vala/libcanberra.vapi \
+  	vala/libcanberra-gtk.vapi
+  
+! SUBDIRS = src gtkdoc doc
+  MAINTAINERCLEANFILES = README
+  noinst_DATA = README
+  pkgconfigdir = $(libdir)/pkgconfig
+--- 392,398 ----
+  	vala/libcanberra.vapi \
+  	vala/libcanberra-gtk.vapi
+  
+! SUBDIRS = src
+  MAINTAINERCLEANFILES = README
+  noinst_DATA = README
+  pkgconfigdir = $(libdir)/pkgconfig

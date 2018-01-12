@@ -17,7 +17,7 @@ die () {
 trap die HUP INT QUIT ABRT TERM
 
 # Enable debugging output until this is ready for merging
-set -x
+#set -x
 
 # Program name
 APP="RawTherapee"
@@ -28,7 +28,7 @@ LOWERAPP=${APP,,}
 # including RT, is installed. For example, if PREFIX=zyx it means that RT is installed under /zyx
 
 # Prefix (without the leading "/") in which RawTherapee and its dependencies are installed:
-export PREFIX="zyx"
+export PREFIX="$AIPREFIX"
 
 # Get the latest version of the AppImage helper functions,
 # or use a fallback copy if not available:
@@ -91,6 +91,17 @@ locale-gen en_US.UTF-8
 export LANG="en_US.UTF-8"
 export LANGUAGE="en_US:en"
 export LC_ALL="en_US.UTF-8"
+
+# Libcanberra build and install
+cd /work || exit 1
+rm -rf libcanberra*
+wget http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz || exit 1
+tar xJvf libcanberra-0.30.tar.xz || exit 1
+cd libcanberra-0.30 || exit 1
+patch -p1 < /sources/ci/libcanberra-disable-gtkdoc.patch
+./configure --prefix=/$PREFIX --enable-gtk-doc=no --enable-gtk-doc-html=no --enable-gtk-doc-pdf=no || exit 1
+make -j 2 || exit 1
+make install || exit 1
 
 # Lensfun build and install
 cd /work || exit 1
@@ -219,9 +230,9 @@ cp -L "./$PREFIX/lib/"*.* ./usr/lib
 rm -rf "./$PREFIX/lib"
 
 # Compile Glib schemas
-mkdir -p usr/share/glib-2.0/schemas/
-cd usr/share/glib-2.0/schemas/ || exit 1
-glib-compile-schemas .
+(mkdir -p usr/share/glib-2.0/schemas/ && \
+cd usr/share/glib-2.0/schemas/ && \
+glib-compile-schemas .) || exit 1
 
 # Copy gconv
 cp -a /usr/lib/x86_64-linux-gnu/gconv usr/lib
@@ -309,6 +320,9 @@ if [[ x"$gomplib" != "x" ]]; then
     cp -L "$gomplib" usr/optional/libstdc++ || exit 1
 fi
 
+echo "before get_desktopintegration"
+pwd
+ls
 # desktopintegration asks the user on first run to install a menu item
 get_desktopintegration "$LOWERAPP"
 
