@@ -29,6 +29,7 @@ LOWERAPP=${APP,,}
 
 # Prefix (without the leading "/") in which RawTherapee and its dependencies are installed:
 export PREFIX="$AIPREFIX"
+export AI_SCRIPTS_DIR="/sources/ci"
 
 # Get the latest version of the AppImage helper functions,
 # or use a fallback copy if not available:
@@ -39,12 +40,22 @@ fi
 # Source the script:
 . ./functions.sh
 
+echo ""
+echo "########################################################################"
+echo ""
+echo "AppImage configuration:"
+echo "  APP: \"$APP\""
+echo "  LOWERAPP: \"$LOWERAPP\""
+echo "  PREFIX: \"$PREFIX\""
+echo "  AI_SCRIPTS_DIR: \"${AI_SCRIPTS_DIR}\""
+echo ""
+
 ########################################################################
 # Additional helper functions:
 ########################################################################
 
 # Delete blacklisted libraries
-delete_blacklisted()
+delete_blacklisted_custom()
 {
     printf '%s\n' "APPIMAGEBASE: ${APPIMAGEBASE}"
     ls "${APPIMAGEBASE}"
@@ -77,6 +88,13 @@ strip_binaries()
     } | xargs -0 --no-run-if-empty --verbose -n1 strip
 }
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Installing additional system packages"
+echo ""
+
 # Add some required packages
 sudo apt-get -y update
 sudo apt-get install -y libiptcdata0-dev wget curl fuse libfuse2 git || exit 1
@@ -92,16 +110,30 @@ export LANG="en_US.UTF-8"
 export LANGUAGE="en_US:en"
 export LC_ALL="en_US.UTF-8"
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Building and installing libcanberra"
+echo ""
+
 # Libcanberra build and install
 cd /work || exit 1
 rm -rf libcanberra*
 wget http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz || exit 1
 tar xJvf libcanberra-0.30.tar.xz || exit 1
 cd libcanberra-0.30 || exit 1
-patch -p1 < /sources/ci/libcanberra-disable-gtkdoc.patch
+patch -p1 < "${AI_SCRIPTS_DIR}"/libcanberra-disable-gtkdoc.patch
 ./configure --prefix=/$PREFIX --enable-gtk-doc=no --enable-gtk-doc-html=no --enable-gtk-doc-pdf=no || exit 1
 make -j 2 || exit 1
 make install || exit 1
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Building and installing LensFun 0.3.2"
+echo ""
 
 # Lensfun build and install
 cd /work || exit 1
@@ -117,6 +149,13 @@ cmake \
     ../ || exit 1
 make --jobs=2 || exit 1
 make install || exit 1
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Building and installing RawTherapee"
+echo ""
 
 # RawTherapee build and install
 mkdir -p /sources/build/appimage
@@ -137,10 +176,15 @@ cmake \
 make --jobs=2 || exit 1
 make install || exit 1
 
+echo ""
+echo "########################################################################"
+echo ""
+echo "Creating and cleaning AppImage folder"
+
 # Create a folder in the shared area where the AppImage structure will be copied
 mkdir -p /sources/build/appimage
 cd /sources/build/appimage || exit 1
-cp /sources/ci/excludelist . || exit 1
+cp "${AI_SCRIPTS_DIR}"/excludelist . || exit 1
 export APPIMAGEBASE="$(pwd)"
 
 # Remove old AppDir structure (if existing)
@@ -148,67 +192,29 @@ rm -rf "${APP}.AppDir"
 mkdir -p "${APP}.AppDir/usr/"
 cd "${APP}.AppDir" || exit 1
 export APPDIR="$(pwd)"
+echo "  APPIMAGEBASE: \"$APPIMAGEBASE\""
+echo "  APPDIR: \"$APPDIR\""
+echo ""
 
 #sudo chown -R "$USER" "/${PREFIX}/"
 
-# Copy main RT executable into $APPDIR/usr/bin/rawtherapee.real
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy executable"
+
+# Copy main RT executable into $APPDIR/usr/bin/rawtherapee
 mkdir -p ./usr/bin
-cp -a "/${PREFIX}/bin/${LOWERAPP}" "./usr/bin/${LOWERAPP}.real" || exit 1
+echo "cp -a \"/${PREFIX}/bin/${LOWERAPP}\" \"./usr/bin/${LOWERAPP}\""
+cp -a "/${PREFIX}/bin/${LOWERAPP}" "./usr/bin/${LOWERAPP}" || exit 1
+echo ""
 
-# Create the launcher script
-cat <<EOF > "usr/bin/${LOWERAPP}"
-#!/usr/bin/env bash
-HERE="$(dirname "$(readlink -f "${0}")")"
-export PATH="${PATH}:/sbin:/usr/sbin"
-export LD_LIBRARY_PATH="${HERE}/../lib:${HERE}/../lib/x86_64-linux-gnu:${HERE}/../../lib:${LD_LIBRARY_PATH}"
-export XDG_DATA_DIRS="${HERE}/../share/:${HERE}/../share/mime/:${XDG_DATA_DIRS}"
-export GTK_PATH="${HERE}/../lib/gtk-2.0:${GTK_PATH}"
-export PANGO_LIBDIR="${HERE}/../lib"
-export GCONV_PATH="${HERE}/../lib/gconv"
-export GDK_PIXBUF_MODULEDIR="${HERE}/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders"
-export GDK_PIXBUF_MODULE_FILE="${HERE}/../lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-if [[ -e /etc/fonts/fonts.conf ]]; then
-  export FONTCONFIG_PATH=/etc/fonts
-fi
-# libstdc++ version detection
-stdcxxlib="$(ldconfig -p | grep 'libstdc++.so.6 (libc6,x86-64)'| awk 'NR==1{print $NF}')"
-echo "System stdc++ library: \"$stdcxxlib\""
-stdcxxver1="$(strings "$stdcxxlib" | grep '^GLIBCXX_[0-9].[0-9]*' | cut -d"_" -f 2 | sort -V | tail -n 1)"
-echo "System stdc++ library version: \"$stdcxxver1\""
-stdcxxver2="$(strings "$HERE/../optional/libstdc++/libstdc++.so.6" | grep '^GLIBCXX_[0-9].[0-9]*' | cut -d"_" -f 2 | sort -V | tail -n 1)"
-echo "Bundled stdc++ library version: \"$stdcxxver2\""
-stdcxxnewest="$(echo "$stdcxxver1 $stdcxxver2" | tr " " "\n" | sort -V | tail -n 1)"
-echo "Newest stdc++ library version: \"$stdcxxnewest\""
-if [[ x"$stdcxxnewest" = x"$stdcxxver1" ]]; then
-   echo "Using system stdc++ library"
-else
-   echo "Using bundled stdc++ library"
-   export LD_LIBRARY_PATH="${HERE}/../optional/libstdc++:${LD_LIBRARY_PATH}"
-fi
-cd "$HERE" && cd ..
-ldd "./bin/LOWERAPP.real"
-"./bin/LOWERAPP.real" "$@"
-EOF
 
-sed -i -e "s|LOWERAPP|$LOWERAPP|g" "usr/bin/${LOWERAPP}" || exit 1
-chmod u+x "usr/bin/${LOWERAPP}" || exit 1
-
-# Copy desktop and icon file to AppDir for AppRun to pick them up
-mkdir -p usr/share/applications/
-cp "/${PREFIX}/share/applications/rawtherapee.desktop" "usr/share/applications" || exit 1
-
-mkdir -p usr/share/icons
-cp -r "/${PREFIX}/share/icons/hicolor" "usr/share/icons" || exit 1
-
-# TODO Might want to "|| exit 1" these, and generate_status
-get_apprun || exit 1
-get_desktop || exit 1
-get_icon || exit 1
-
-# Other application-specific finishing touches
-cd ..
-generate_status
-cd "$APPDIR" || exit 1
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy dependencies"
+echo ""
 
 # Copy in the dependencies that cannot be assumed to be available
 # on all target systems
@@ -229,6 +235,13 @@ rm -rf "./$PREFIX/lib/x86_64-linux-gnu"
 cp -L "./$PREFIX/lib/"*.* ./usr/lib
 rm -rf "./$PREFIX/lib"
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Compile Glib schemas"
+echo ""
+
 # Compile Glib schemas
 (mkdir -p usr/share/glib-2.0/schemas/ && \
 cd usr/share/glib-2.0/schemas/ && \
@@ -236,6 +249,13 @@ glib-compile-schemas .) || exit 1
 
 # Copy gconv
 cp -a /usr/lib/x86_64-linux-gnu/gconv usr/lib
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy gdk-pixbuf modules and cache file"
+echo ""
 
 # Copy gdk-pixbuf modules and cache file, and patch the cache file
 # so that modules are picked from the AppImage bundle
@@ -261,6 +281,13 @@ printf '%s\n' "==================" "gdk-pixbuf loaders:"
 ls "usr/${gdk_pixbuf_libdir_bundle}/loaders"
 printf '%s\n' "=================="
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy the pixmap theme engine"
+echo ""
+
 # Copy the pixmap theme engine
 mkdir -p usr/lib/gtk-2.0/engines
 gtk_libdir="$(pkg-config --variable=libdir gtk+-2.0)"
@@ -269,29 +296,44 @@ if [[ x"${pixmap_lib}" != "x" ]]; then
     cp -L "${pixmap_lib}" usr/lib/gtk-2.0/engines
 fi
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy MIME files"
+echo ""
+
 # Copy MIME files
 mkdir -p usr/share
 cp -a /usr/share/mime usr/share || exit 1
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy RT's share folder"
+echo ""
 
 # Copy RT's share folder
 mkdir -p usr/share
 cp -a "/$PREFIX/share/rawtherapee" usr/share || exit 1
 
-# Update the Lensfun database and put the newest version into the bundle
-"/$PREFIX/bin/lensfun-update-data"
-mkdir -p usr/share/lensfun/version_1
-cp -a /var/lib/lensfun-updates/version_1/* usr/share/lensfun/version_1 || exit 1
-printf '%s\n' "" "==================" "Contents of updated lensfun database:"
-ls usr/share/lensfun/version_1
 
-#cp -a "/$PREFIX/lib/"* usr/lib
-#cp -a "/$PREFIX/lib64/"* usr/lib64
-#rm -rf "$PREFIX"
-#rm -rf usr/lib/python*
-#rm -rf usr/lib64/python*
+echo ""
+echo "########################################################################"
+echo ""
+echo 'Move all libraries into $APPDIR/usr/lib'
+echo ""
 
 # Move all libraries into $APPDIR/usr/lib
 move_lib
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Fix path of pango modules"
+echo ""
 
 # Fix path of pango modules
 patch_pango
@@ -299,9 +341,23 @@ patch_pango
 # Delete stuff that should not go into the AppImage
 rm -rf usr/include usr/libexec usr/_jhbuild usr/share/doc
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Delete blacklisted libraries"
+echo ""
+
 # Delete dangerous libraries; see
 # https://github.com/probonopd/AppImages/blob/master/excludelist
-delete_blacklisted
+delete_blacklisted_custom
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy libstdc++.so.6 and libgomp.so.1 into the AppImage"
+echo ""
 
 # Copy libstdc++.so.6 and libgomp.so.1 into the AppImage
 # They will be used if they are newer than those of the host
@@ -320,15 +376,54 @@ if [[ x"$gomplib" != "x" ]]; then
     cp -L "$gomplib" usr/optional/libstdc++ || exit 1
 fi
 
-echo "before get_desktopintegration"
-pwd
-ls
-# desktopintegration asks the user on first run to install a menu item
-get_desktopintegration "$LOWERAPP"
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Patch away absolute paths"
+echo ""
 
 # Patch away absolute paths; it would be nice if they were relative
 find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched /usr in " \; -exec echo {} \; >& patch1.log
 find usr/ -type f -exec sed -i -e "s|/${PREFIX}/|././/|g" {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch2.log
+
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy desktop file and application icon"
+
+# Copy desktop and icon file to AppDir for AppRun to pick them up
+mkdir -p usr/share/applications/
+echo "cp \"/${PREFIX}/share/applications/rawtherapee.desktop\" \"usr/share/applications\""
+cp "/${PREFIX}/share/applications/rawtherapee.desktop" "usr/share/applications" || exit 1
+
+# Copy hicolor icon theme
+mkdir -p usr/share/icons
+echo "cp -r \"/${PREFIX}/share/icons/hicolor\" \"usr/share/icons\""
+cp -r "/${PREFIX}/share/icons/hicolor" "usr/share/icons" || exit 1
+echo ""
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Creating top-level desktop and icon files, and application launcher"
+echo ""
+
+# TODO Might want to "|| exit 1" these, and generate_status
+#get_apprun || exit 1
+cp -a "${AI_SCRIPTS_DIR}/AppRun" . || exit 1
+get_desktop || exit 1
+get_icon || exit 1
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Copy fonts configuration"
+echo ""
 
 # The fonts configuration should not be patched, copy back original one
 if [[ -e /$PREFIX/etc/fonts/fonts.conf ]]; then
@@ -339,10 +434,42 @@ elif [[ -e /usr/etc/fonts/fonts.conf ]]; then
     cp /usr/etc/fonts/fonts.conf usr/etc/fonts/fonts.conf || exit 1
 fi
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Run get_desktopintegration"
+echo ""
+
+# desktopintegration asks the user on first run to install a menu item
+get_desktopintegration "$LOWERAPP"
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Update LensFun database"
+echo ""
+
+# Update the Lensfun database and put the newest version into the bundle
+"/$PREFIX/bin/lensfun-update-data"
+mkdir -p usr/share/lensfun/version_1
+cp -a /var/lib/lensfun-updates/version_1/* usr/share/lensfun/version_1 || exit 1
+printf '%s\n' "" "==================" "Contents of updated lensfun database:"
+ls usr/share/lensfun/version_1
+echo ""
+
 # Workaround for:
 # ImportError: /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0: undefined symbol: XRRGetMonitors
 cp "$(ldconfig -p | grep libgdk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs)" ./usr/lib/
 cp "$(ldconfig -p | grep libgtk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs)" ./usr/lib/
+
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Stripping binaries"
+echo ""
 
 # Strip binaries.
 strip_binaries
