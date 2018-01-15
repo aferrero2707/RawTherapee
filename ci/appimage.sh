@@ -117,13 +117,20 @@ echo ""
 echo "Building and installing libcanberra"
 echo ""
 
-# Libcanberra build and install
+# Install missing six python module
 cd /work || exit 1
+rm -f get-pip.py
+wget https://bootstrap.pypa.io/get-pip.py
+python get-pip.py
+pip install six || exit 1
+pip3 install six || exit 1
+
+# Libcanberra build and install
 rm -rf libcanberra*
 wget http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz || exit 1
 tar xJvf libcanberra-0.30.tar.xz || exit 1
 cd libcanberra-0.30 || exit 1
-patch -p1 < "${AI_SCRIPTS_DIR}"/libcanberra-disable-gtkdoc.patch
+#patch -p1 < "${AI_SCRIPTS_DIR}"/libcanberra-disable-gtkdoc.patch
 ./configure --prefix=/$PREFIX --enable-gtk-doc=no --enable-gtk-doc-html=no --enable-gtk-doc-pdf=no || exit 1
 make -j 2 || exit 1
 make install || exit 1
