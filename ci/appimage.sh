@@ -111,6 +111,29 @@ export LANGUAGE="en_US:en"
 export LC_ALL="en_US.UTF-8"
 
 
+
+echo ""
+echo "########################################################################"
+echo ""
+echo "Install Hicolor and Adwaita icon themes"
+
+(cd /work && rm -rf hicolor-icon-theme-0.* && \
+wget http://icon-theme.freedesktop.org/releases/hicolor-icon-theme-0.17.tar.xz && \
+tar xJf hicolor-icon-theme-0.17.tar.xz && cd hicolor-icon-theme-0.17 && \
+./configure --prefix=/${PREFIX} && make install && rm -rf hicolor-icon-theme-0.*) || exit 1
+echo "icons after hicolor installation:"
+ls /${PREFIX}/share/icons
+echo ""
+
+(cd /work && rm -rf adwaita-icon-theme-3.* && \
+wget http://ftp.gnome.org/pub/gnome/sources/adwaita-icon-theme/3.26/adwaita-icon-theme-3.26.0.tar.xz && \
+tar xJf adwaita-icon-theme-3.26.0.tar.xz && cd adwaita-icon-theme-3.26.0 && \
+./configure --prefix=/${PREFIX} && make install && rm -rf adwaita-icon-theme-3.26.0*) || exit 1
+echo "icons after adwaita installation:"
+ls /${PREFIX}/share/icons
+echo ""
+
+
 echo ""
 echo "########################################################################"
 echo ""
@@ -394,7 +417,6 @@ echo ""
 # Patch away absolute paths; it would be nice if they were relative
 find usr/ -type f -exec sed -i -e 's|/usr/|././/|g' {} \; -exec echo -n "Patched /usr in " \; -exec echo {} \; >& patch1.log
 find usr/ -type f -exec sed -i -e "s|/${PREFIX}/|././/|g" {} \; -exec echo -n "Patched /${PREFIX} in " \; -exec echo {} \; >& patch2.log
-
 
 
 echo ""
