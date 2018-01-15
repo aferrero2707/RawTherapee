@@ -251,6 +251,7 @@ echo ""
 
 # Compile Glib schemas
 (mkdir -p usr/share/glib-2.0/schemas/ && \
+cp -a /$PREFIX/share/glib-2.0/schemas/* usr/share/glib-2.0/schemas && \
 cd usr/share/glib-2.0/schemas/ && \
 glib-compile-schemas .) || exit 1
 
